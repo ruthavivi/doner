@@ -29,6 +29,7 @@ from qgis.PyQt.QtWidgets import QAction
 import json
 
 # Initialize Qt resources from file resources.py
+from .doner_dialog_two import doner_two_main,geom_get, settings_window
 from .resources import *
 # Import the code for the dialog
 from .doner_dialog import doner_main, geom_get, settings_window
@@ -165,6 +166,9 @@ class add_doner:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         icon_path_add = ':/plugins/doner/doner_add.png'
+        #########
+        icon_path_addd = ':/plugins/doner-Copy/doner_addd.png'
+        #########
         icon_path_cut = ':/plugins/doner/doner_cut.png'
         icon_path_settings = ':/plugins/doner/doner_settings.png'
         self.add_action(
@@ -172,6 +176,15 @@ class add_doner:
             text=self.tr(u'Add doner'),
             callback=self.run_add,
             parent=self.iface.mainWindow())
+
+        ##########
+
+        self.add_action(
+            icon_path_add,
+            text=self.tr(u'Add doner'),
+            callback=self.run_add2,
+            parent=self.iface.mainWindow())
+        ##########
         self.add_action(
             icon_path_cut,
             text=self.tr(u'Cut with doner'),
@@ -201,6 +214,17 @@ class add_doner:
         result = self.dlg
         if result:
             pass
+
+    def run_add2(self):
+        self.dlg = doner_two_main().add_ellipse()
+        result = self.dlg
+        if result:
+            pass
+
+
+
+
+
 
     def run_cut(self):
         self.dlg_two = doner_main().cut_ellipse()

@@ -23,7 +23,7 @@
 """
 
 import os
-import math 
+import math
 import json
 
 from qgis.PyQt import uic
@@ -46,22 +46,20 @@ default_cfg = {
     "apply_symbology": True
 }
 
-symbology_orange = {
-    'border_width_map_unit_scale': '3x:0,0,0,0,0,0', 
-    'color': '255,149,1,255', 
-    'joinstyle': 'bevel', 
-    'offset': '0,0', 
-    'offset_map_unit_scale': 
-    '3x:0,0,0,0,0,0', 
-    'offset_unit': 'MM', 
-    'outline_color': '35,35,35,255', 
-    'outline_style': 'no', 
-    'outline_width': '0.26', 
-    'outline_width_unit': 'MM', 
+symbology_red = {
+    'border_width_map_unit_scale': '3x:0,0,0,0,0,0',
+    'color': '255, 22, 1,255',
+    'joinstyle': 'bevel',
+    'offset': '0,0',
+    'offset_map_unit_scale':
+        '3x:0,0,0,0,0,0',
+    'offset_unit': 'MM',
+    'outline_color': '35,35,35,255',
+    'outline_style': 'no',
+    'outline_width': '0.26',
+    'outline_width_unit': 'MM',
     'style': 'solid'
 }
-
-
 
 
 
@@ -85,10 +83,10 @@ class geom_get(object):
 
     def get_extent(self):
         self.readCfg()
-        wk = int(self.cfg["width"])/100
-        hk = int(self.cfg["height"])/100
+        wk = int(self.cfg["width"]) / 100
+        hk = int(self.cfg["height"]) / 100
         qgs_extent = iface.mapCanvas().extent()
-        fp = qgs_extent.center() 
+        fp = qgs_extent.center()
         w = wk * qgs_extent.width() / 2
         h = hk * qgs_extent.height() / 2
         if int(self.cfg["round"]):
@@ -96,13 +94,13 @@ class geom_get(object):
         return fp, w, h
 
     def get_geom(self, pnt, w, h):
-        list_circle =[]
-        for i in range(0,36):
-            an =math.radians(i * 10)
-            np_x = pnt.x() + (w* math.sin(an))
-            np_y = pnt.y() + (h* math.cos(an))
-            pnt_new = QgsPointXY(np_x,np_y) 
-            list_circle.append(pnt_new) 
+        list_circle = []
+        for i in range(0, 36):
+            an = math.radians(i * 10)
+            np_x = pnt.x() + (w * math.sin(an))
+            np_y = pnt.y() + (h * math.cos(an))
+            pnt_new = QgsPointXY(np_x, np_y)
+            list_circle.append(pnt_new)
         ellipse_geom = QgsGeometry.fromPolygonXY([list_circle])
         return ellipse_geom
 
@@ -123,9 +121,9 @@ class geom_get(object):
                 layer.dataProvider().addFeatures([new_feature])
         else:
             if init_geometry:
-                polygon = init_geometry.difference(el_geom) 
+                polygon = init_geometry.difference(el_geom)
                 last_id = d_geoms[0].id()
-                if not polygon.area(): 
+                if not polygon.area():
                     layer.dataProvider().deleteFeatures([last_id])
                 else:
                     layer.changeGeometry(last_id, polygon)
@@ -135,10 +133,10 @@ class geom_get(object):
         return
 
 
-class doner_main(QWidget):
+class doner_two_main(QWidget):
     def __init__(self, parent=None):
         """Constructor."""
-        super(doner_main, self).__init__(parent)
+        super(doner_two_main, self).__init__(parent)
         self.current_crs = QgsProject.instance().crs()
         self.geom_tool = geom_get()
         self.layer = self.check_layer()
@@ -149,19 +147,19 @@ class doner_main(QWidget):
         tech_layer.setCrs(self.current_crs)
         iface.mainWindow().blockSignals(False)
         file_writer = QgsVectorFileWriter(
-            vectorFileName=os.path.join(path), 
-            fileEncoding='utf-8', 
-            fields=tech_layer.fields(), 
-            geometryType=6, 
+            vectorFileName=os.path.join(path),
+            fileEncoding='utf-8',
+            fields=tech_layer.fields(),
+            geometryType=6,
             driverName='ESRI Shapefile'
         )
         del file_writer
         out_layer = QgsVectorLayer("MultiPolygon", 'Doner', path)
-        return  
+        return
 
     def paint_layer(self, lyr):
-        smb = QgsSimpleFillSymbolLayer.create(symbology_orange)
-        symbol_new= QgsFillSymbol()
+        smb = QgsSimpleFillSymbolLayer.create(symbology_red)
+        symbol_new = QgsFillSymbol()
         symbol_new.appendSymbolLayer(smb.clone())
         symbol_new.deleteSymbolLayer(0)
         renderer = QgsSingleSymbolRenderer(symbol_new.clone())
@@ -171,7 +169,6 @@ class doner_main(QWidget):
         lyr.renderer().setSymbol(symbol_new)
         lyr.triggerRepaint()
         return
-
 
 
 
@@ -188,33 +185,26 @@ class doner_main(QWidget):
             if not os.path.isfile(layer_file):
                 self.layer_create(layer_file)
             doner_layer = QgsVectorLayer(layer_file, 'Doner', "ogr")
-            QgsProject.instance().addMapLayer(doner_layer) 
+            QgsProject.instance().addMapLayer(doner_layer)
             doner_layer.setCrs(self.current_crs)
         if int(cfg["apply_symbology"]):
             self.paint_layer(doner_layer)
         iface.setActiveLayer(current_layer)
         return doner_layer
 
-
-
-
     def add_ellipse(self):
 
-        p,w,h = self.geom_tool.get_extent()
-        geom_new = self.geom_tool.get_geom(p,w,h)
+        p, w, h = self.geom_tool.get_extent()
+        geom_new = self.geom_tool.get_geom(p, w, h)
         self.geom_tool.edit_layer(self.layer, geom_new, 'add')
 
         self.layer.triggerRepaint()
         iface.mapCanvas().refresh()
         return
 
-
-
-
-
     def cut_ellipse(self):
-        p,w,h = self.geom_tool.get_extent()
-        geom_new = self.geom_tool.get_geom(p,w,h)
+        p, w, h = self.geom_tool.get_extent()
+        geom_new = self.geom_tool.get_geom(p, w, h)
         self.geom_tool.edit_layer(self.layer, geom_new, 'cut')
         self.layer.triggerRepaint()
         iface.mapCanvas().refresh()
@@ -231,7 +221,7 @@ class settings_window(QWidget):
         if os.path.isfile(cfg_file):
             with open(cfg_file, 'r') as fp:
                 data = json.load(fp)
-            
+
         else:
             self.writeCfg(default_cfg)
             data = default_cfg
@@ -295,7 +285,7 @@ class settings_window(QWidget):
 
         self.data_cfg = self.readCfg()
 
-        self.check_round.stateChanged.connect(lambda:self.state_w(self.check_round))
+        self.check_round.stateChanged.connect(lambda: self.state_w(self.check_round))
         self.btn_help.clicked.connect(self.help)
         self.btn_save.clicked.connect(self.save)
 
@@ -312,7 +302,7 @@ class settings_window(QWidget):
         msg.warning(self, "Warning", err_text)
 
     def save(self):
-        if not all(n.text().isdigit() and n.text()!="0" for n in [self.width, self.height]):
+        if not all(n.text().isdigit() and n.text() != "0" for n in [self.width, self.height]):
             self.warning_message("Enter valid numbers")
             return
 
